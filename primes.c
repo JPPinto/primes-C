@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cmath>
+#include <math.h>
 #include "circularQueue.h"
 
 int * primes;
@@ -16,10 +16,9 @@ int main(int argc, char * argv[]){
 
 	int amountOfNumbers = atoi(argv[1]);
 
-	int numberOfPrimes = 1.2 * (amountOfNumbers / log(amountOfNumbers));
+	int numberOfPrimes = 1.2 * (amountOfNumbers / log((double)amountOfNumbers)); //1.2*(N / ln N)
 
-	primes = (int *)malloc(sizeof(int) * numberOfPrimes); //1.2*(N / ln N)
+	primes = (int *)malloc(sizeof(int) * numberOfPrimes); 
 
-	
-
+	exit(EXIT_SUCCESS);
 }
