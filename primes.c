@@ -16,7 +16,7 @@ int main(int argc, char * argv[]){
 
 	int amountOfNumbers = atoi(argv[1]);
 
-	int numberOfPrimes = 1.2 * (amountOfNumbers / log((double)amountOfNumbers)); //1.2*(N / ln N)
+	int numberOfPrimes = 1.2 * ((double)amountOfNumbers / log((double)amountOfNumbers)); //1.2*(N / ln N)
 
 	primes = (int *)malloc(sizeof(int) * numberOfPrimes); 
 
