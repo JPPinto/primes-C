@@ -5,9 +5,8 @@
 #include "circularQueue.h"
 
 int * primes;
-int currentIndex = 0;
 
-int main(int argc, char * argv[]){
+int main(int argc, char * argv[], char * envp[]){
 
 	if(argc < 2){
 		fprintf(stderr, "Usage: %s primeNumber\n", argv[0]);
