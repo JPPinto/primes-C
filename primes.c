@@ -2,12 +2,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <semaphore.h>
 #include "circularQueue.h"
 
-#define QUEUE_CAPACITY 5
+#define QUEUE_CAPACITY 10
+
+void *initialThread(void *arg);
+void *filterThread(void *arg);
 
 int * primes;
 int currentIndex = 0;
+int N; //Argument passed on the program
+sem_t stop;
+
 
 int main(int argc, char * argv[], char * envp[]) {
 
@@ -15,28 +22,90 @@ int main(int argc, char * argv[], char * envp[]) {
         fprintf(stderr, "Usage: %s primeNumber\n", argv[0]);
         exit(1);
     }
-
-    int amountOfNumbers = atoi(argv[1]);
-    int numberOfPrimes = 1.2 * ((double) amountOfNumbers / log((double) amountOfNumbers)); //1.2*(N / ln N)
+	
+	//Initialize semaphore
+	sem_init(&stop, 0, 1);
+	
+	N = atoi(argv[1]);
+    int numberOfPrimes = 1.2 * ((double) N / log((double) N)); //1.2*(N / ln N)
 
     primes = (int *) malloc(sizeof (int) * numberOfPrimes);
+	
+	//pthread_create(......initialThread(N);
 
-    exit(EXIT_SUCCESS);
+	sem_wait(&stop);
+	
+	printf("Prime numbers:");
+	fflush(stdout);
+	
+	int i;
+	for (i = 0; i < numberOfPrimes; i++) {
+		printf(" %d,", primes[i]);
+	}
+	printf("\n");
+	
+	sem_destroy(&stop);
+    return 0;
 }
 
-void initialThread(void * numMax) {
-    int x = (int) numMax;
+void *initialThread(void *arg) {
 
     primes[currentIndex++] = 2;
 
-    if (numMax > 2) {
-        CircularQueue * q;
-        queue_init(&q, 5);
+    if (N > 2) {
         
-        
-    }
+		//Create Exit Queue
+		CircularQueue *exitQueue;
+        queue_init(&exitQueue, QUEUE_CAPACITY);
+		
+		//Create Filter Thread
+		pthread_t tid;
+		pthread_create(&tid, NULL, filterThread, exitQueue);
+		
+		//Place odd numbers & 0
+		int i;
+		for (i = 3; i < N; i += 2) {
+			queue_put(exitQueue, i);
+		}
+		if (N % 2) queue_put(exitQueue, N);
+		queue_put(exitQueue, 0);
+		
+    } else {
+		sem_post(&stop);
+	}
 }
 
-void filteringThread(){
-
+void *filterThread(void *arg){
+	CircularQueue *entryQueue = (CircularQueue *) arg;
+	int first = queue_get(entryQueue);
+	primes[currentIndex++] = first;
+	
+	if (first > (int) sqrt(N)) {
+		int head = queue_get(entryQueue);
+		while ( (head = queue_get(entryQueue)) != 0 ) {
+			primes[currentIndex++] = head;
+		}
+		sem_post(&stop);
+	} else {
+		//Create Exit Queue
+		CircularQueue *exitQueue;
+        queue_init(&exitQueue, QUEUE_CAPACITY);
+		
+		//Create Filter Thread
+		pthread_t tid;
+		pthread_create(&tid, NULL, filterThread, exitQueue);
+		
+		//Filter multiples & place non-multiple in the exit queue
+		int head;
+		while ( (head = queue_get(entryQueue)) != 0  ) {
+			if (head % first) { //if non-multiple of the 1st value
+				queue_put(exitQueue, head);
+			}
+		}
+		queue_put(exitQueue, 0);
+		
+		//The Placing of the 1st value in the public list is already done  before the if statement
+	}
+	
+	
 }
