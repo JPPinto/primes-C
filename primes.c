@@ -5,7 +5,7 @@
 #include <semaphore.h>
 #include "circularQueue.h"
 
-#define QUEUE_CAPACITY 50
+#define QUEUE_CAPACITY 5
 
 void *initialThread(void *arg);
 void *filterThread(void *arg);
@@ -14,7 +14,6 @@ int * primes;
 int currentIndex = 0;
 int N; //Argument passed on the program
 sem_t stop;
-pthread_mutex_t lock;
 
 int main(int argc, char * argv[], char * envp[]) {
 
@@ -86,8 +85,8 @@ void *initialThread(void *arg) {
 }
 
 void *filterThread(void *arg) {
-    
-    pthread_mutex_lock(&lock); //Let each thread finish before proceeding to the next thread
+
+    //Let each thread finish before proceeding to the next thread
 
     CircularQueue *entryQueue = (CircularQueue *) arg;
     int first = queue_get(entryQueue);
@@ -111,8 +110,13 @@ void *filterThread(void *arg) {
         //Filter multiples & place non-multiple in the exit queue
         int head;
         while ((head = queue_get(entryQueue)) != 0) {
+
+            //printf("---- %d\n", head);		
+
             if (head % first) { //if non-multiple of the 1st value
+
                 queue_put(exitQueue, head);
+
             }
         }
         queue_put(exitQueue, 0);
@@ -120,7 +124,7 @@ void *filterThread(void *arg) {
         //The Placing of the 1st value in the public list is already done  before the if statement
     }
 
-    pthread_mutex_unlock(&lock);
+
 
 }
 

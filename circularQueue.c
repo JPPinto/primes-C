@@ -21,13 +21,13 @@ void queue_init(CircularQueue **q, unsigned int capacity) // TO DO: change retur
 // Inserts 'value' at the tail of queue 'q'
 void queue_put(CircularQueue *q, QueueElem value)
 {
-	sem_wait(&q->empty);
-	q->v[q->last] = value;
-	if (q->last == q->capacity)
-		q->last = 0;
-	else
-		q->last++;
-	sem_post(&q->full);
+  sem_wait(&q->empty);
+
+  q->v[q->last] = value;
+  q->last++;
+  q->last %= q->capacity;
+
+  sem_post(&q->full);
 
 }
 
@@ -35,16 +35,15 @@ void queue_put(CircularQueue *q, QueueElem value)
 // Removes element at the head of queue 'q' and returns its 'value'
 QueueElem queue_get(CircularQueue *q)
 {	
-	if (q->v[q->first] == 0) return 0;
-
 	sem_wait(&q->full);
 
-	QueueElem val = q->v[q->first];
-	q->v[q->first++] = 0;
-	
-	sem_post(&q->empty);
+  QueueElem queueValue = q->v[q->first];
+  q->first++;
+  q->first%=q->capacity;
 
-	return val;
+  sem_post(&q->empty);
+
+  return queueValue;
 }
 
 //------------------------------------------------------------------------------------------
@@ -56,9 +55,17 @@ void queue_destroy(CircularQueue *q)
 	free(q);
 }
 
-//==========================================================================================
-// EXAMPLE: Creation of a circular queue using queue_init()
-#define QUEUE_SIZE 10 // TO DO: test your program using different queue sizes
+//------------------------------------------------------------------------------------------
+// Prints the Queue
+void queue_print(CircularQueue *q) {
+	printf("Queue:");
+	int i;
+	for (i=0; i < q->capacity; i++) {
+		printf(" %d", (int) q->v[i]);
+		fflush(stdout);
+		if (i != q->capacity-1) printf(",");
+	}
+	printf("\n");
+}
 
-//CircularQueue *q;
-//queue_init(&q,QUEUE_SIZE);
+

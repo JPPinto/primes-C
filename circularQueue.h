@@ -33,5 +33,7 @@ QueueElem queue_get(CircularQueue *q);
 
 void queue_destroy(CircularQueue *q);
 
+void queue_print(CircularQueue *q);
+
 #endif /* __CIRCULAR_QUEUE_H */ 
 
